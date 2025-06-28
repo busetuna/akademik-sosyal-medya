@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/partials/navbar.css">
+  <link rel="stylesheet" href="/css/author/author.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <%- include('../partials/navbar') %>
+
+  <div class="author-page">
+    <!-- Yazar Bilgileri ve Alıntı Kutusu -->
+    <div class="author-layout">
+      <!-- Sol: Yazar bilgileri ve makaleler -->
+      <div class="author-left">
+        <div class="author-header">
+          <div class="author-photo">
+            <img src="<%= author.thumbnail %>" alt="Yazar Fotoğrafı">
+          </div>
+
+          <div class="author-info">
+            <h2><%= author.name %></h2>
+            <p><%= author.affiliations %></p>
+            <p><%= author.email %></p>
+            <p><a href="<%= author.website %>" target="_blank">Web Sitesi</a></p>
+            <div class="author-tags">
+              <% if (author.interests) { %>
+                <% author.interests.forEach(tag => { %>
+                  <span><%= tag.title %></span>
+                <% }) %>
+              <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Makale listesi -->
+        <div class="article-list">
+          <div class="article-table">
+            <div class="article-row article-header">
+              <div class="article-title">BAŞLIK</div>
+              <div class="article-cited">ALINTI YAPANLAR</div>
+              <div class="article-year">YIL</div>
+            </div>
+
+            <% articles.forEach(article => { %>
+              <div class="article-row">
+                <div class="article-title">
+                  <a href="<%= article.link %>" target="_blank"><%= article.title %></a>
+                  <div class="article-meta">
+                    <%= article.authors %><br>
+                    <span class="journal"><%= article.publication %></span>
+                  </div>
+                </div>
+                <div class="article-cited"><%= article.cited_by?.value || 0 %></div>
+                <div class="article-year"><%= article.year || '—' %></div>
+              </div>
+            <% }) %>
+          </div>
+
+          <div id="load-more-wrapper" style="text-align: center; margin-top: 20px;">
+            <span id="load-info">Makaleler 1–20</span>
+            <span id="load-more" style="cursor: pointer; color: #007bff; margin-left: 10px;">▼ Daha Fazla Göster</span>
+          </div>
+
+
+
+        </div>
+      </div>
+
+      <!-- Sağ: Alıntı Kutusu -->
+      <div class="author-right">
+        <div class="citation-box">
+          <h4>Alıntı Yapanlar</h4>
+          <table>
+            <thead>
+              <tr>
+                <th></th>
+                <th>Hepsi</th>
+                <th>2020+</th>
+              </tr>
+            </thead>
+            
+            <tbody>
+              <tr>
+                <td>Alıntılar</td>
+                <td><%= citations.table[0]?.alıntılar?.all || 0 %></td>
+                <td><%= citations.table[0]?.alıntılar?.["2020_yılından_bugüne"] || 0 %></td>
+              </tr>
+              <tr>
+                <td>h-endeksi</td>
+                <td><%= citations.table[1]?.h_endeksi?.all || 0 %></td>
+                <td><%= citations.table[1]?.h_endeksi?.["2020_yılından_bugüne"] || 0 %></td>
+              </tr>
+              <tr>
+                <td>i10-endeksi</td>
+                <td><%= citations.table[2]?.i10_endeksi?.all || 0 %></td>
+                <td><%= citations.table[2]?.i10_endeksi?.["2020_yılından_bugüne"] || 0 %></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <canvas id="citationChart" width="100%" height="100"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bar grafik scripti -->
+  <script>
+    const ctx = document.getElementById('citationChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+        datasets: [{
+          label: 'Alıntı Sayısı',
+          data: [123, 145, 189, 210, 190, 165, 90], // Şimdilik sabit
+          backgroundColor: '#adb5bd'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 65 }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+
+
+    const authorId = "<%= author.author_id %>";
+    let currentStart = 20; // İlk 20 zaten yüklü
+    let loadedCount = 20;  // Toplam yüklenmiş makale sayısı
+    let nextPageUrl = "<%= nextPageUrl %>";
+
+    document.getElementById('load-more').addEventListener('click', async () => {
+      try {
+        const res = await fetch(`/load-more-paginated?url=${encodeURIComponent(nextPageUrl)}`);
+        const data = await res.json();
+
+        const articleTable = document.querySelector('.article-table');
+
+        data.articles.forEach(article => {
+          const row = document.createElement('div');
+          row.className = 'article-row';
+          row.innerHTML = `
+            <div class="article-title">
+              <a href="${article.link}" target="_blank">${article.title}</a>
+              <div class="article-meta">
+                ${article.authors}<br>
+                <span class="journal">${article.publication}</span>
+              </div>
+            </div>
+            <div class="article-cited">${article.cited_by?.value || 0}</div>
+            <div class="article-year">${article.year || '—'}</div>
+          `;
+          articleTable.appendChild(row);
+        });
+
+        // ✅ Güncel makale sayısını artır ve yazıyı güncelle
+        loadedCount += data.articles.length;
+        document.getElementById("load-info").textContent = `Makaleler 1–${loadedCount}`;
+
+        // ✅ Sonraki sayfa URL'sini güncelle
+        nextPageUrl = data.nextUrl;
+
+        // ✅ Artık makale yoksa "daha fazla göster" yazısını gizle
+        if (!data.nextUrl || data.articles.length === 0) {
+          document.getElementById('load-more-wrapper').innerHTML = `<span>Tüm makaleler yüklendi.</span>`;
+        }
+
+      } catch (err) {
+        console.error('Yükleme hatası:', err);
+      }
+    });
+
+    
+  </script>
+
+</body>
+</html>

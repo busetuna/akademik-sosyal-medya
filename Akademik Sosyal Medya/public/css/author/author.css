@@ -1,0 +1,183 @@
+.author-page {
+  max-width: 1200px;
+  margin: 100px auto 0 auto;
+  padding: 0 2rem;
+  font-family: Arial, sans-serif;
+}
+
+/* ---------- GENEL YATAY YAPI (Header + Alıntı kutusu) ---------- */
+.author-layout {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.author-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.author-right {
+  width: 300px;
+}
+
+/* ---------- HEADER: Yazar Fotoğrafı ve Bilgileri ---------- */
+
+.author-header {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.author-photo img {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  border-radius: 50%;
+  border: 2px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.author-info h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 24px;
+  color: #212529;
+}
+
+.author-info p {
+  margin: 0.3rem 0;
+  color: #495057;
+  font-size: 15px;
+}
+
+.author-info a {
+  color: #1864ab;
+  text-decoration: none;
+}
+
+.author-tags {
+  margin-top: 1rem;
+}
+
+.author-tags span {
+  display: inline-block;
+  background-color: #e7f5ff;
+  color: #1864ab;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+}
+
+/* ---------- MAKALE LİSTESİ ---------- */
+
+.article-list {
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* ---------- ALINTI KUTUSU ---------- */
+
+.citation-box {
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  font-size: 14px;
+}
+
+.citation-box h4 {
+  margin-bottom: 0.75rem;
+  font-size: 16px;
+}
+
+.citation-box table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.citation-box th,
+.citation-box td {
+  padding: 4px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.citation-box th {
+  color: #555;
+  font-weight: 600;
+}
+
+
+
+/* ---------- MAKALELER ------------ */
+.article-table {
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.article-row {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.article-header {
+  background-color: #f1f3f5;
+  font-weight: bold;
+  color: #495057;
+  padding: 0.75rem 1rem;
+  border-top: none;
+}
+
+.article-title {
+  flex: 1.5;
+}
+
+.article-cited {
+  flex: 0.5;
+  text-align: right;
+  padding-left: 1rem;
+}
+
+.article-year {
+  flex: 0.5;
+  text-align: right;
+  padding-left: 1rem;
+}
+
+.article-title a {
+  color: #1a0dab;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.article-title a:hover {
+  text-decoration: underline;
+}
+
+.article-meta {
+  color: #555;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.article-meta .journal {
+  font-style: italic;
+  color: #666;
+}
+
