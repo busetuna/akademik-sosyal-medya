@@ -230,63 +230,100 @@
             abstractCount--;
         }
 
-        document.getElementById('compareForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const myAbstract = document.getElementById('myAbstract').value.trim();
-            const compareAbstractElements = document.querySelectorAll('textarea[name="compareAbstract"]');
-            const compareAbstracts = Array.from(compareAbstractElements)
-                .map(el => el.value.trim())
-                .filter(text => text.length > 0);
-            
-            if (!myAbstract || compareAbstracts.length === 0) {
-                alert('⚠️ Lütfen tüm alanları doldurun.');
-                return;
-            }
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const resultDiv = document.getElementById('result');
-            
-            // Loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Karşılaştırılıyor...';
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'result loading';
-            resultDiv.textContent = '🤖 AI ile karşılaştırma yapılıyor, lütfen bekleyin...\n\nBu işlem 30-60 saniye sürebilir.';
-            
-            try {
-                const response = await fetch('/compare-abstracts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        myAbstract,
-                        compareAbstracts
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    resultDiv.className = 'result success';
-                    resultDiv.textContent = data.result;
-                    
-                    if (data.warning) {
-                        resultDiv.textContent += '\n\n⚠️ ' + data.warning;
-                    }
-                } else {
-                    throw new Error(data.error || 'Bilinmeyen hata');
-                }
-                
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.textContent = '❌ Hata: ' + error.message;
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = '🚀 Karşılaştır';
-            }
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+  const checkboxes = document.querySelectorAll('.compare-checkbox');
+  const compareBtn = document.getElementById('compareSelected');
+  const myAbstractInput = document.getElementById('myAbstract');
+
+  document.getElementById('compareForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const myAbstract = document.getElementById('myAbstract').value.trim();
+  if (!myAbstract) {
+    alert('Lütfen kendi özetinizi girin!');
+    return;
+  }
+
+  const compareAbstracts = Array.from(document.querySelectorAll('textarea[name="compareAbstract"]'))
+    .map(t => t.value.trim())
+    .filter(v => v.length > 0);
+
+  if (compareAbstracts.length === 0) {
+    alert('En az bir karşılaştırılacak abstract girmelisiniz!');
+    return;
+  }
+
+  try {
+    const res = await fetch('/compare-abstracts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ myAbstract, compareAbstracts }),
+    });
+    const data = await res.json();
+
+    if (data.result) {
+      alert('Karşılaştırma sonucu:\n\n' + data.result);
+    } else {
+      alert('Karşılaştırma yapılamadı.');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('Sunucu ile iletişimde hata oluştu.');
+  }
+});
+
+  function updateButtonState() {
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    const hasMyAbstract = myAbstractInput.value.trim().length > 0;
+    compareBtn.disabled = !(anyChecked && hasMyAbstract);
+  }
+
+  // Checkbox ve textarea değişimlerini dinle
+  checkboxes.forEach(cb => cb.addEventListener('change', updateButtonState));
+  myAbstractInput.addEventListener('input', updateButtonState);
+
+  // Sayfa yüklendiğinde buton durumunu ayarla
+  updateButtonState();
+
+  // Butona tıklama olayı
+  compareBtn.addEventListener('click', () => {
+    const myAbstract = myAbstractInput.value.trim();
+    if (!myAbstract) {
+      alert('Lütfen kendi özetinizi girin!');
+      return;
+    }
+
+    const selectedAbstracts = Array.from(checkboxes)
+      .filter(cb => cb.checked)
+      .map(cb => cb.dataset.abstract)
+      .filter(abs => abs && abs !== 'Özet bilgisi yok');
+
+    if (selectedAbstracts.length === 0) {
+      alert('Lütfen en az bir makale seçin ve özetinin olduğundan emin olun.');
+      return;
+    }
+
+    fetch('/compare-abstracts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ myAbstract, compareAbstracts: selectedAbstracts }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.result) {
+          alert("Karşılaştırma sonucu:\n\n" + data.result);
+        } else {
+          alert("Karşılaştırma yapılamadı.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Sunucu ile iletişimde hata oluştu.");
+      });
+  });
+});
+
+
     </script>
 </body>
 </html>
