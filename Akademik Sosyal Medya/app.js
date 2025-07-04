@@ -125,8 +125,6 @@ app.get('/load-more-paginated', async (req, res) => {
     res.status(500).json({ error: "Makale alınamadı." });
   }
 });
-
-// Abstract karşılaştırma route
 app.post('/compare-abstracts', async (req, res) => {
   const { myAbstract, compareAbstracts } = req.body;
 
@@ -134,61 +132,28 @@ app.post('/compare-abstracts', async (req, res) => {
     return res.status(400).json({ error: 'Eksik veri' });
   }
 
-  // Daha detaylı prompt hazırla
-  const prompt = `For a literature review chapter I need to compare my study with the other studies. If there are similar works in the related studies, you can group them and compare with my work as a group. In the text please give the reference numbers in brackets.
-
-My paper's abstract:
-${myAbstract}
-
-The abstracts for the other studies are given below with a reference number:
-${compareAbstracts.map((abs, i) => `[${i + 1}] ${abs}`).join('\n\n')}
-
-Please provide a detailed comparison highlighting similarities, differences, and unique contributions of my work compared to the related studies.`;
+  const prompt = buildPrompt(myAbstract, compareAbstracts); // az önce önerdiğim template modülünden al
 
   try {
-    // Text generation için Hugging Face API kullan
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/facebook/bart-large-cnn',
-      { 
-        inputs: prompt,
-        parameters: {
-          max_length: 1000,
-          min_length: 100,
-          do_sample: true,
-          temperature: 0.7
-        }
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${huggingFaceApiKey}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const response = await axios.post('http://localhost:11434/api/generate', {
+      model: "llama3",
+      prompt,
+      stream: false // tam cevabı tek seferde al
+    });
 
-    console.log("HF Cevap:", response.data);
-
-    // Cevabı işle
-    let result = '';
-    if (Array.isArray(response.data) && response.data.length > 0) {
-      result = response.data[0]?.summary_text || response.data[0]?.generated_text || 'Model cevap döndüremedi.';
-    } else {
-      result = 'Model cevap döndüremedi.';
-    }
-
-    res.json({ result });
+    const output = response.data.response;
+    res.json({ result: output });
 
   } catch (error) {
-    console.error("Hugging Face API hatası:", error.response?.data || error.message);
-    
-    // Hata durumunda basit bir karşılaştırma yap
+    console.error("Ollama Hatası:", error.message);
     const simpleComparison = generateSimpleComparison(myAbstract, compareAbstracts);
     res.json({ 
       result: simpleComparison,
-      warning: 'AI model kullanılamadı, basit karşılaştırma yapıldı.'
+      warning: 'LLaMA yanıt veremedi, basit karşılaştırma yapıldı.'
     });
   }
 });
+
 
 // Basit karşılaştırma fonksiyonu (fallback)
 function generateSimpleComparison(myAbstract, compareAbstracts) {
