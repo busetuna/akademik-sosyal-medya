@@ -6,6 +6,8 @@
   <link rel="stylesheet" href="/css/partials/navbar.css">
   <link rel="stylesheet" href="/css/author/author.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
   <style>
     .abstract-refresh-notice {
       margin: 20px 0;
@@ -113,19 +115,22 @@
             <% articles.forEach((article, index) => { %>
               <div class="article-row" data-article-index="<%= index %>">
                 <div class="article-title">
-                  <input type="checkbox"
-                         class="compare-checkbox"
-                         id="chk-<%= index %>"
-                         data-title="<%= article.title %>"
-                         data-abstract="<%= article.abstract || 'Özet bilgisi yok' %>">
-                  <label for="chk-<%= index %>">
-                    <a href="<%= article.link || '#' %>" target="_blank"><%= article.title %></a>
-                    <div class="article-meta">
-                      <%= article.authors || '' %><br>
-                      <span class="journal"><%= article.publication || 'Yayın bilgisi yok' %></span>
-                    </div>
-                  </label>
-                </div>
+  <input type="checkbox"
+         class="compare-checkbox"
+         id="chk-<%= index %>"
+         data-title="<%= article.title %>"
+         data-abstract="<%= article.abstract || 'Özet bilgisi yok' %>">
+
+  <label for="chk-<%= index %>">Makale Seç</label>
+
+  <a href="<%= article.link || '#' %>" target="_blank"><%= article.title %></a>
+
+  <div class="article-meta">
+    <%= article.authors || '' %><br>
+    <span class="journal"><%= article.publication || 'Yayın bilgisi yok' %></span>
+  </div>
+</div>
+
                 <div class="article-cited"><%= article.cited_by && article.cited_by.value ? article.cited_by.value : 0 %></div>
                 <div class="article-year"><%= article.year || '-' %></div>
               </div>
@@ -188,9 +193,254 @@
   </div>
 
   <script>
+    // Author sayfasına abstract çekme butonu ekle
+function addAbstractButtons() {
+  const articleRows = document.querySelectorAll('.article-row:not(.article-header)');
+  
+  articleRows.forEach((row, index) => {
+    const titleDiv = row.querySelector('.article-title');
+    const link = titleDiv.querySelector('a');
+    
+    if (link && link.href) {
+      // Abstract refresh butonu oluştur
+      const refreshBtn = document.createElement('button');
+      refreshBtn.className = 'refresh-abstract-btn';
+      refreshBtn.innerHTML = '🔄 Özet Çek';
+      refreshBtn.style.cssText = `
+        margin-left: 10px; padding: 5px 10px; font-size: 12px;
+        background: #4c6ef5; color: white; border: none; border-radius: 4px;
+        cursor: pointer; transition: background 0.3s;
+      `;
+      
+      refreshBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await fetchAbstractForArticle(link.href, index, refreshBtn);
+      });
+      
+      // Butonu makale başlığının yanına ekle
+      titleDiv.appendChild(refreshBtn);
+    }
+  });
+}
+
+// Tek makale için abstract çekme
+async function fetchAbstractForArticle(url, index, button) {
+  const originalText = button.innerHTML;
+  button.innerHTML = '⏳ Çekiliyor...';
+  button.disabled = true;
+  
+  try {
+    const response = await fetch('/get-abstract', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url: url })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success && data.abstract) {
+      // Checkbox'ın data-abstract özelliğini güncelle
+      const checkbox = document.querySelector(`#chk-${index}`);
+      if (checkbox) {
+        checkbox.setAttribute('data-abstract', data.abstract);
+      }
+      
+      // Görsel feedback
+      button.innerHTML = '✅ Çekildi';
+      button.style.background = '#28a745';
+      
+      // Özet bilgisini göster
+      showAbstractPreview(data.abstract, button);
+      
+    } else {
+      button.innerHTML = '❌ Başarısız';
+      button.style.background = '#dc3545';
+      console.error('Abstract çekilemedi:', data.message);
+    }
+    
+  } catch (error) {
+    button.innerHTML = '❌ Hata';
+    button.style.background = '#dc3545';
+    console.error('Abstract çekme hatası:', error);
+  } finally {
+    // 3 saniye sonra butonu eski haline getir
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.style.background = '#4c6ef5';
+      button.disabled = false;
+    }, 3000);
+  }
+}
+
+// Abstract önizlemesi göster
+function showAbstractPreview(abstract, button) {
+  // Mevcut önizlemeyi kaldır
+  const existingPreview = button.parentNode.querySelector('.abstract-preview');
+  if (existingPreview) {
+    existingPreview.remove();
+  }
+  
+  // Yeni önizleme oluştur
+  const preview = document.createElement('div');
+  preview.className = 'abstract-preview';
+  preview.style.cssText = `
+    margin-top: 10px; padding: 10px; background: #f8f9fa;
+    border: 1px solid #dee2e6; border-radius: 4px;
+    font-size: 13px; line-height: 1.4; max-height: 100px;
+    overflow-y: auto; position: relative;
+  `;
+  
+  // Kapat butonu
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '×';
+  closeBtn.style.cssText = `
+    position: absolute; top: 5px; right: 5px;
+    background: none; border: none; font-size: 16px;
+    cursor: pointer; color: #666;
+  `;
+  closeBtn.onclick = () => preview.remove();
+  
+  // Abstract metnini kısalt
+  const shortAbstract = abstract.length > 300 ? 
+    abstract.substring(0, 300) + '...' : abstract;
+  
+  preview.innerHTML = `
+    <strong>Özet:</strong><br>
+    ${shortAbstract}
+  `;
+  preview.appendChild(closeBtn);
+  
+  // Önizlemeyi butona ekle
+  button.parentNode.appendChild(preview);
+}
+
+// Tüm makaleler için toplu abstract çekme
+async function fetchAllAbstracts() {
+  const articles = [];
+  const articleRows = document.querySelectorAll('.article-row:not(.article-header)');
+  
+  articleRows.forEach((row) => {
+    const titleDiv = row.querySelector('.article-title');
+    const link = titleDiv.querySelector('a');
+    const title = link ? link.textContent.trim() : '';
+    
+    if (link && link.href) {
+      articles.push({
+        title: title,
+        link: link.href
+      });
+    }
+  });
+  
+  if (articles.length === 0) {
+    alert('Çekilecek makale bulunamadı!');
+    return;
+  }
+  
+  // Loading göster
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'bulk-loading';
+  loadingDiv.style.cssText = `
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: white; padding: 20px; border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 1000;
+    text-align: center;
+  `;
+  loadingDiv.innerHTML = `
+    <div style="font-size: 18px; margin-bottom: 10px;">📄 Özetler çekiliyor...</div>
+    <div class="progress-text">0 / ${articles.length} makale işlendi</div>
+    <div style="margin-top: 10px; font-size: 12px; color: #666;">
+      Bu işlem birkaç dakika sürebilir
+    </div>
+  `;
+  document.body.appendChild(loadingDiv);
+  
+  try {
+    const response = await fetch('/update-abstracts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ articles: articles })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Checkbox'ları güncelle
+      data.articles.forEach((article, index) => {
+        const checkbox = document.querySelector(`#chk-${index}`);
+        if (checkbox && article.abstract) {
+          checkbox.setAttribute('data-abstract', article.abstract);
+        }
+      });
+      
+      alert(`✅ ${data.articles.length} makale başarıyla güncellendi!`);
+    } else {
+      alert('❌ Özetler çekilemedi: ' + data.message);
+    }
+    
+  } catch (error) {
+    console.error('Toplu abstract çekme hatası:', error);
+    alert('❌ Sunucu hatası oluştu');
+  } finally {
+    loadingDiv.remove();
+  }
+}
+
+// Sayfa yüklendiğinde abstract butonlarını ekle
+document.addEventListener('DOMContentLoaded', () => {
+  // Tek tek abstract çekme butonları
+  addAbstractButtons();
+  
+  // Toplu abstract çekme butonu
+  const compareSection = document.querySelector('.compare-section');
+  if (compareSection) {
+    const bulkBtn = document.createElement('button');
+    bulkBtn.innerHTML = '📄 Tüm Özetleri Çek';
+    bulkBtn.style.cssText = `
+      background: #17a2b8; color: white; padding: 10px 20px;
+      border: none; border-radius: 6px; cursor: pointer;
+      font-size: 14px; margin-top: 10px; margin-right: 10px;
+    `;
+    bulkBtn.onclick = fetchAllAbstracts;
+    
+    compareSection.appendChild(bulkBtn);
+  }
+});
+
+// Abstract refresh bildirimi
+function showAbstractRefreshNotice() {
+  const notice = document.createElement('div');
+  notice.className = 'abstract-refresh-notice';
+  notice.style.cssText = `
+    background: #d4edda; color: #155724; padding: 10px;
+    border: 1px solid #c3e6cb; border-radius: 4px;
+    margin: 10px 0; font-size: 14px;
+  `;
+  notice.innerHTML = `
+    <strong>💡 İpucu:</strong> Makalelerin özetlerini çekmek için yanlarındaki 
+    "🔄 Özet Çek" butonlarını kullanın veya "📄 Tüm Özetleri Çek" ile 
+    toplu olarak çekin.
+  `;
+  
+  // Author header'ından sonra ekle
+  const authorHeader = document.querySelector('.author-header');
+  if (authorHeader) {
+    authorHeader.parentNode.insertBefore(notice, authorHeader.nextSibling);
+  }
+}
+
+// Sayfa yüklendiğinde bildirimi göster
+document.addEventListener('DOMContentLoaded', () => {
+  showAbstractRefreshNotice();
+});
     // Grafik oluşturma - dinamik verilerle
     const ctx = document.getElementById('citationChart').getContext('2d');
-    const chartData = JSON.parse('<%= JSON.stringify(citations && citations.graph ? citations.graph : { values: [] }) %>');
+    const chartData = JSON.parse('<%- JSON.stringify(citations && citations.graph ? citations.graph : { values: [] }) %>');
+
 
     if (chartData.values && chartData.values.length) {
       new Chart(ctx, {
