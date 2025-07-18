@@ -7,73 +7,192 @@
   <link rel="stylesheet" href="/css/author/author.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
   <style>
-    .abstract-refresh-notice {
-      margin: 20px 0;
+    * {
+      font-family: 'Inter', sans-serif;
+      box-sizing: border-box;
     }
-    
-    .compare-section {
-      margin: 20px 0;
+
+    body {
+      background: linear-gradient(to right, #e3f2fd, #e8eaf6);
+      margin: 0;
+      padding: 0;
+    }
+
+    .author-page {
+      max-width: 1200px;
+      margin: auto;
+      padding: 40px 20px;
+      display: flex;
+      gap: 30px;
+    }
+
+    .author-left, .author-right {
+      background: #fff;
       padding: 20px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border: 1px solid #dee2e6;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
     }
-    
-    .compare-section h3 {
-      margin-bottom: 15px;
+
+    .author-left {
+      flex: 2;
+    }
+
+    .author-right {
+      flex: 1;
+    }
+
+    .author-header {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+.upload-btn {
+  display: inline-block;
+  background: #20c997;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 20px;
+  transition: background 0.3s ease;
+}
+
+.upload-btn:hover {
+  background: #12b886;
+}
+
+    .author-photo img {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #4c6ef5;
+    }
+
+    .author-info h2 {
+      margin: 0;
+      font-size: 24px;
       color: #333;
     }
-    
-    #myAbstract {
-      width: 100%;
-      min-height: 120px;
-      padding: 10px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-family: Arial, sans-serif;
+
+    .author-info p {
+      margin: 5px 0;
+      color: #666;
       font-size: 14px;
+    }
+
+    .author-tags span {
+      background: #e3f2fd;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      margin-right: 6px;
+      color: #1e88e5;
+    }
+
+    .article-table {
+      margin-top: 20px;
+      border-top: 1px solid #ccc;
+    }
+
+    .article-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 60px;
+      padding: 10px 0;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    .article-header {
+      font-weight: 600;
+      background: #f1f3f5;
+      padding: 10px 0;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .article-title a {
+      color: #1e88e5;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .article-meta {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .compare-section textarea {
+      font-size: 14px;
+      width: 100%;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
       resize: vertical;
     }
-    
-    #myAbstract:focus {
-      outline: none;
-      border-color: #4c6ef5;
-    }
-    
-    #compareSelected {
+
+    #compareSelected, .compare-section button {
       background: #4c6ef5;
       color: white;
-      padding: 12px 24px;
+      padding: 12px 20px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      margin-top: 15px;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
       transition: background 0.3s;
     }
-    
-    #compareSelected:hover:not(:disabled) {
-      background: #364fc7;
-    }
-    
+
     #compareSelected:disabled {
-      background: #6c757d;
+      background: #9aa0ac;
       cursor: not-allowed;
     }
-    
-    .selection-info {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #666;
+
+    #compareSelected:hover:not(:disabled), .compare-section button:hover {
+      background: #3b5bdb;
     }
-    
-    .no-articles {
-      text-align: center;
-      padding: 40px;
-      color: #666;
-      font-style: italic;
+
+    .citation-box {
+      background: #fafafa;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .citation-box h4 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .citation-box table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .citation-box th, .citation-box td {
+      padding: 8px;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .citation-box th {
+      background: #f0f0f0;
+    }
+
+    .citation-box canvas {
+      margin-top: 20px;
+    }
+
+    .abstract-refresh-notice {
+      background: #e6ffed;
+      border: 1px solid #b2f2bb;
+      color: #2b8a3e;
+      border-radius: 6px;
+      padding: 10px 14px;
+      margin-top: 16px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -188,6 +307,7 @@
           <canvas id="citationChart" width="100%" height="100"></canvas>
         </div>
       </div>
+<a href="/upload" class="upload-btn">📤 PDF Yükle ve Karşılaştır</a>
 
     </div>
   </div>
@@ -358,7 +478,7 @@ async function fetchAllAbstracts() {
   document.body.appendChild(loadingDiv);
   
   try {
-    const response = await fetch('/update-abstracts', {
+    const response = await fetch('/api/scholar/update-abstracts', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -542,7 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
         compareBtn.textContent = '⏳ Karşılaştırılıyor...';
 
         try {
-          const response = await fetch('/compare-abstracts', {
+          const response = await fetch('/api/compare', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
