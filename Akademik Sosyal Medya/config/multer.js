@@ -10,14 +10,16 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({
+const upload = multer({ 
   storage: storage,
   fileFilter: function (req, file, cb) {
-    const ext = path.extname(file.originalname);
-    if (ext !== '.pdf') {
-      return cb(new Error('Sadece PDF dosyaları yüklenebilir'));
+    const filetypes = /pdf/;
+    const mimetype = filetypes.test(file.mimetype);
+    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+    if (mimetype && extname) {
+      return cb(null, true);
     }
-    cb(null, true);
+    cb(new Error('Sadece PDF dosyalarına izin verilir!'));
   }
 });
 

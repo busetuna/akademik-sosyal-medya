@@ -45,6 +45,10 @@ app.use((req, res) => {
   res.status(404).send('Sayfa bulunamadı.');
 });
 
+app.use((err, req, res, next) => {
+  console.error('🔥 Sunucu Hatası:', err);
+  res.status(500).send('Sunucu hatası!');
+});
 // Sunucuyu başlat
 app.listen(port, () => {
   console.log(`🚀 Sunucu http://localhost:${port} adresinde çalışıyor.`);

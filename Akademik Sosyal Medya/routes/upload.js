@@ -1,37 +1,56 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('../config/multer');
-const { extractAbstract } = require('../utils/extractAbstract');
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
+const axios = require('axios');
+const { extractAbstract } = require('../utils/extractAbstract');
+const buildPrompt = require('../utils/buildPrompt');
 
-// GET /upload - Sayfayı yükle
-router.get('/', (req, res) => {
-  res.render('upload', { abstracts: [] });
-});
-
-// POST /upload - Dosyaları işle
+// Çoklu PDF dosyası için multer
 router.post('/', multer.array('pdfs', 10), async (req, res) => {
   const files = req.files;
-  if (!files || files.length === 0) {
-    return res.status(400).send('Dosya yüklenmedi.');
+  const myAbstract = req.body.myAbstract;
+
+  if (!files || files.length === 0 || !myAbstract) {
+    return res.status(400).send('Eksik veri: PDF ve kendi abstract gerekli.');
   }
 
   try {
-    const abstracts = [];
+    // Her PDF için özet çıkar
+    const compareAbstracts = [];
 
     for (const file of files) {
-      const dataBuffer = fs.readFileSync(file.path);
-      const pdfData = await pdfParse(dataBuffer);
+      const buffer = fs.readFileSync(file.path);
+      const pdfData = await pdfParse(buffer);
       const text = pdfData.text;
       const abstract = extractAbstract(text);
-      abstracts.push(abstract);
+      compareAbstracts.push(abstract);
     }
 
-    res.render('upload', { abstracts });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Sunucu hatası.');
+    // LLaMA için prompt oluştur
+    const prompt = buildPrompt(myAbstract, compareAbstracts);
+
+    // LLaMA’ya isteği gönder
+    const response = await axios.post('http://localhost:11434/api/generate', {
+      model: "llama3",
+      prompt: prompt,
+      stream: false,
+      options: {
+        temperature: 0.7,
+        top_k: 40,
+        top_p: 0.9,
+        repeat_penalty: 1.1,
+        num_predict: 2000
+      }
+    });
+
+    const output = response.data.response;
+
+    res.render('result', { result: output });
+  } catch (error) {
+    console.error('Karşılaştırma hatası:', error);
+    res.status(500).send('Sunucu hatası oluştu.');
   }
 });
 

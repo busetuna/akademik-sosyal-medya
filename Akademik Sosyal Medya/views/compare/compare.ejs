@@ -2,39 +2,72 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Abstract Karşılaştırma</title>
-  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f0f2f5;
+      padding: 40px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      resize: vertical;
+    }
+    .checkbox-group {
+      margin: 10px 0;
+    }
+    button {
+      background: #4c6ef5;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #3b5bdb;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
-    <h1>Abstract Karşılaştırma</h1>
-    
-    <div class="row">
-      <div class="col">
-        <h2>Ana Abstract</h2>
-        <div class="abstract-box" id="mainAbstract"></div>
-      </div>
-      
-      <div class="col">
-        <h2>Karşılaştırılacak Abstract'lar</h2>
-        <div id="compareAbstracts">
-          <textarea class="abstract-input" placeholder="Abstract yapıştırın"></textarea>
-          <button class="btn" id="addAbstractBtn">Ekle</button>
-        </div>
-        
-        <div id="abstractList"></div>
-      </div>
-    </div>
-    
-    <button id="compareNow" class="btn primary">Karşılaştırmayı Başlat</button>
-    
-    <div id="comparisonResult" class="hidden">
-      <h2>Karşılaştırma Sonucu</h2>
-      <div id="resultContent"></div>
-    </div>
-  </div>
+    <h2>📑 Abstract Karşılaştır</h2>
 
-  <script src="/js/compare.js"></script>
+    <form action="/api/compare" method="POST">
+      <label><strong>Kendi Abstract'ınız:</strong></label>
+      <textarea name="myAbstract" required placeholder="Kendi abstract'ınızı buraya yazın..."></textarea>
+
+      <hr>
+
+      <label><strong>Karşılaştırılacak Makaleler:</strong></label>
+
+      <% if (articles && articles.length > 0) { %>
+        <% articles.forEach((article, i) => { %>
+          <div class="checkbox-group">
+            <input type="checkbox" id="abs<%= i %>" name="compareAbstracts[]" value="<%= article.abstract %>">
+            <label for="abs<%= i %>"><%= article.title %></label>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p>Henüz abstract verisi yok.</p>
+      <% } %>
+
+      <button type="submit">🚀 Karşılaştırmayı Başlat</button>
+    </form>
+  </div>
 </body>
 </html>

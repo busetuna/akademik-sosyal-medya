@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Karşılaştırma Sonucu</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f6f8;
+      padding: 40px;
+    }
+
+    .result-box {
+      max-width: 900px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .section {
+      margin-bottom: 30px;
+    }
+
+    .section h3 {
+      margin-bottom: 10px;
+      color: #4c6ef5;
+    }
+
+    .content-box {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      line-height: 1.6;
+      border: 1px solid #dee2e6;
+      white-space: pre-wrap;
+    }
+
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      text-decoration: none;
+      color: #4c6ef5;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="result-box">
+    <h2>📊 LLaMA Karşılaştırma Sonucu</h2>
+
+    <div class="section">
+      <h3>✍️ Kendi Abstract'ınız</h3>
+      <div class="content-box"><%= myAbstract %></div>
+    </div>
+
+    <div class="section">
+      <h3>📄 Seçilen Makale Özetleri</h3>
+      <div class="content-box">
+        <% compareAbstracts.forEach((abs, i) => { %>
+          <p><strong>[<%= i+1 %>] </strong><%= abs %></p>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>🧠 Üretilen Karşılaştırma Metni</h3>
+      <div class="content-box"><%= result %></div>
+    </div>
+
+    <a href="/upload">↩️ Yeni Karşılaştırma Yap</a>
+  </div>
+</body>
+</html>

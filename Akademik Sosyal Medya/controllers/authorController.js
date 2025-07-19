@@ -26,6 +26,21 @@ exports.getAuthorById = async (req, res) => {
   }
 };
 
+exports.comparePage = async (req, res) => {
+  try {
+    const authorId = req.params.id;
+    const data = await fetchAuthorDetails(authorId);
+
+    res.render('compare', {
+      title: 'Abstract Karşılaştır',
+      articles: data.articles
+    });
+  } catch (error) {
+    console.error("Karşılaştırma sayfası hatası:", error.message);
+    res.status(500).send("Karşılaştırma sayfası oluşturulurken hata oluştu.");
+  }
+};
+
 exports.searchAuthor = async (req, res) => {
   const query = req.query.q;
   try {
