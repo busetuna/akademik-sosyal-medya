@@ -44,17 +44,12 @@
 </head>
 <body>
   <div class="container">
-    <h2>📤 PDF Yükle ve Özet Karşılaştır</h2>
-
-    <form action="/upload" method="POST" enctype="multipart/form-data">
-      <label>PDF Dosyalarını Seç (birden fazla):</label>
-      <input type="file" name="pdfs" accept="application/pdf" multiple required />
-
-      <label style="margin-top:20px;">Kendi Makalenizin Özeti:</label>
-      <textarea name="myAbstract" placeholder="Buraya kendi abstract'ınızı yazın..." required></textarea>
-
-      <button type="submit">🚀 Karşılaştır</button>
-    </form>
+   <h2>PDF Yükle</h2>
+  <form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="pdfs" multiple required />
+    <textarea name="myAbstract" required></textarea>
+    <button type="submit">Gönder</button>
+  </form>
   </div>
 </body>
 </html>

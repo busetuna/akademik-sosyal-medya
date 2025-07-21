@@ -7,6 +7,10 @@ const axios = require('axios');
 const { extractAbstract } = require('../utils/extractAbstract');
 const buildPrompt = require('../utils/buildPrompt');
 
+router.get('/', (req, res) => {
+  res.render('upload'); // views/upload.ejs varsa
+});
+
 // Çoklu PDF dosyası için multer
 router.post('/', multer.array('pdfs', 10), async (req, res) => {
   const files = req.files;
@@ -47,7 +51,11 @@ router.post('/', multer.array('pdfs', 10), async (req, res) => {
 
     const output = response.data.response;
 
-    res.render('result', { result: output });
+    res.render('result', {
+      myAbstract,
+      compareAbstracts,
+      result: output
+    });
   } catch (error) {
     console.error('Karşılaştırma hatası:', error);
     res.status(500).send('Sunucu hatası oluştu.');

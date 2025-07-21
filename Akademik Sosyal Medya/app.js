@@ -22,11 +22,15 @@ const authorRoutes = require('./routes/author');
 const scholarRoutes = require('./routes/api/scholar');
 const compareRoutes = require('./routes/api/compare');
 const uploadRoutes = require('./routes/upload');
+// app.use('/api', uploadRoutes);
+// app.use('/api/upload', uploadRoutes);
 
 app.use('/', authorRoutes);
-app.use('/api/scholar', scholarRoutes);
-app.use('/api/compare', compareRoutes);
 app.use('/upload', uploadRoutes);
+app.use('/api/scholar', scholarRoutes);
+app.use('/compare', compareRoutes); //bunu ya da alttaki api/compare'ı dene. bot zannetti beni yine.
+//app.use('/api/compare', compareRoutes);
+
 
 // LLaMA bağlantı kontrolü (başlangıçta sadece bilgi amaçlı)
 const { LLAMA_API_URL } = require('./config/constants');
@@ -49,6 +53,12 @@ app.use((err, req, res, next) => {
   console.error('🔥 Sunucu Hatası:', err);
   res.status(500).send('Sunucu hatası!');
 });
+
+app.use('/upload', (req, res, next) => {
+  console.log(">>> /upload isteği geldi");
+  next();
+});
+
 // Sunucuyu başlat
 app.listen(port, () => {
   console.log(`🚀 Sunucu http://localhost:${port} adresinde çalışıyor.`);
