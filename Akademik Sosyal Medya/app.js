@@ -21,6 +21,7 @@ app.set('views', path.join(__dirname, 'views'));
 const authorRoutes = require('./routes/author');
 const scholarRoutes = require('./routes/api/scholar');
 const compareRoutes = require('./routes/api/compare');
+const compareRoute = require('./routes/api/compare');
 const uploadRoutes = require('./routes/upload');
 // app.use('/api', uploadRoutes);
 // app.use('/api/upload', uploadRoutes);
@@ -28,7 +29,8 @@ const uploadRoutes = require('./routes/upload');
 app.use('/', authorRoutes);
 app.use('/upload', uploadRoutes);
 app.use('/api/scholar', scholarRoutes);
-app.use('/compare', compareRoutes); //bunu ya da alttaki api/compare'ı dene. bot zannetti beni yine.
+app.use('/compare', compareRoutes); 
+app.use('/api/compare', compareRoute);//bunu ya da alttaki api/compare'ı dene. bot zannetti beni yine.
 //app.use('/api/compare', compareRoutes);
 
 
