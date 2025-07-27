@@ -215,8 +215,7 @@ async function getAbstractWithPuppeteer(url) {
       timeout: 30000 
     });
     
-    // Sayfanın tamamen yüklenmesini bekle
-    await page.waitForTimeout(2000);
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     const abstract = await page.evaluate(() => {
       // Farklı selector'ları dene
