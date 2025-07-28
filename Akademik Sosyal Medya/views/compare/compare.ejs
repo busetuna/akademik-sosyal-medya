@@ -55,16 +55,18 @@
 
       <label><strong>Karşılaştırılacak Makaleler:</strong></label>
 
-      <% if (articles && articles.length > 0) { %>
-        <% articles.forEach((article, i) => { %>
-          <div class="checkbox-group">
-            <input type="checkbox" id="abs<%= i %>" name="compareAbstracts[]" value="<%= article.abstract %>">
-            <label for="abs<%= i %>"><%= article.title %></label>
-          </div>
-        <% }) %>
-      <% } else { %>
-        <p>Henüz abstract verisi yok.</p>
-      <% } %>
+    <% if (articles && articles.length > 0) { %>
+  <% articles.forEach((article, i) => { %>
+    <div class="checkbox-group">
+      <input type="checkbox" id="abs<%= i %>" name="compareAbstracts[]" value="<%= i %>">
+      <label for="abs<%= i %>"><%= article.title %></label>
+      <!-- Abstract'ı göster ama value olarak verme -->
+      <p style="font-size: 12px; color: #666; margin: 5px 0;">
+        <%= article.abstract.substring(0, 100) %>...
+      </p>
+    </div>
+  <% }) %>
+<% } %>
 
       <button type="submit">🚀 Karşılaştırmayı Başlat</button>
     </form>

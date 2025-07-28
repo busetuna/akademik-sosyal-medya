@@ -204,12 +204,12 @@ router.post('/', async (req, res) => {
       
       return res.json({
         success: true,
-        result: {
-          text: resultText,
+        result: resultText,
+        metadata: {
           length: resultText.length,
           wordCount: resultText.split(/\s+/).filter(word => word.length > 0).length,
           type: 'llama_analysis'
-        },
+         },
         metadata: {
           inputLength: prompt.length,
           myAbstractLength: myAbstract.length,
